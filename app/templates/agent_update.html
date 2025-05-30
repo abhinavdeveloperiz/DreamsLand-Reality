@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Agent Profile</title>
+    <link rel="stylesheet" href="{% static 'css/agent_update.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Update Profile</h2>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.Profile_picture.id_for_label }}">Profile Picture</label>
+                    {{ form.Profile_picture }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.Phone.id_for_label }}">Phone</label>
+                    {{ form.Phone }}
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="submit-btn">Update Profile</button>
+                    <a href="{% url 'agent' %}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

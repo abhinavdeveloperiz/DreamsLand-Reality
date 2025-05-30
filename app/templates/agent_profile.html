@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Profile - Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/agentprofile.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="profile-img">
+                {% if qs.Profile_picture %}
+                <div class="profile-container">
+                    <img src="{{ qs.Profile_picture.url }}" alt="Profile Picture"
+                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    <button class="edit-profile-btn">
+                        <a href="{% url 'agent_update' qs.id %}" class="edit-icon">✏️</a>
+                    </button>
+                    <input type="file" id="profile-upload" style="display: none;" accept="image/*">
+                </div>
+                {% else %}
+                <div class="profile-container">
+                    <span class="icon">👤</span>
+                    <button class="edit-profile-btn">
+                        <a href="{% url 'agent_update' qs.id %}" class="edit-icon">✏️</a>
+                    </button>
+                    <input type="file" id="profile-upload" style="display: none;" accept="image/*">
+                </div>
+                {% endif %}
+            </div>
+            <h1 class="agent">{{qs.username}}</h1>
+            <div class="agent-status">
+                <span class="status-indicator"></span>
+                Active Agent
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Contact Information -->
+            <div class="section">
+                <h3>
+                    <span class="icon">📧</span>
+                    Contact Information
+                </h3>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <div>
+                        <strong>Phone</strong><br>
+                        <span>{{qs.Phone}}</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="section">
+                <h3>
+                    <span class="icon">👤</span>
+                    Account Details
+                </h3>
+                <div class="timeline-item">
+                    <div class="timeline-date">Created</div>
+                    <div class="timeline-content">{{qs.created_at}}</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Last Updated</div>
+                    <div class="timeline-content">{{qs.updated_at}}</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">Commission Rate</div>
+                    <div class="timeline-content">{{qs.Commission_rate}} %</div>
+                </div>
+            </div>
+
+            <!-- Commission Overview -->
+            <div class="section commission-section">
+                <h3>
+                    <span class="icon">💰</span>
+                    Commission Overview
+                </h3>
+                <div class="commission-grid">
+                    <div class="commission-card">
+                        <div class="commission-amount">{{qs.Total_commission}}</div>
+                        <div class="commission-label">Total Earned</div>
+                    </div>
+                    <div class="commission-card">
+                        <div class="commission-amount">$0.00</div>
+                        <div class="commission-label">Pending Commission</div>
+                    </div>
+                    <div class="commission-card">
+                        <div class="commission-amount">{{qs.total_sales}}</div>
+                        <div class="commission-label">Total Sales</div>
+                    </div>
+                    <div class="commission-card">
+                        <div class="commission-amount">{{qs.Commission_rate}} %</div>
+                        <div class="commission-label">Commission Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add this to your existing script section
+        document.getElementById('profile-upload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('profile_picture', file);
+
+                // Send to your Django backend
+                fetch('/update_profile_picture/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh the page or update the image
+                            location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        // Agent data - replace with actual data from your Django backend
+        const agentData = {
+            username: 'agent_username',
+            email: 'agent@example.com',
+            phone: '+1 (555) 123-4567',
+            profile_picture: null, // URL to profile picture
+            created_at: '2024-01-15T10:00:00Z',
+            updated_date: '2025-05-27T14:30:00Z',
+            is_active: true,
+            commission_rate: 10.00,
+            total_commission_earned: 0.00,
+            pending_commission: 0.00,
+            total_sales_amount: 0.00
+        };
+
+        // Function to format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Update page with agent data
+        function updateAgentProfile(data) {
+            // Update username
+            document.querySelector('.agent-username').textContent = data.username;
+
+            // Update contact info
+            document.querySelector('.contact-item:nth-child(1) span').textContent = data.email;
+            document.querySelector('.contact-item:nth-child(2) span').textContent = data.phone;
+
+            // Update dates
+            document.querySelector('.timeline-item:nth-child(1) .timeline-content').textContent = formatDate(data.created_at);
+            document.querySelector('.timeline-item:nth-child(2) .timeline-content').textContent = formatDate(data.updated_date);
+            document.querySelector('.timeline-item:nth-child(3) .timeline-content').textContent = data.commission_rate.toFixed(2) + '%';
+
+            // Update commission data
+            const commissionCards = document.querySelectorAll('.commission-amount');
+            commissionCards[0].textContent = formatCurrency(data.total_commission_earned);
+            commissionCards[1].textContent = formatCurrency(data.pending_commission);
+            commissionCards[2].textContent = formatCurrency(data.total_sales_amount);
+            commissionCards[3].textContent = data.commission_rate.toFixed(2) + '%';
+
+            // Update status indicator
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.querySelector('.agent-status');
+            if (data.is_active) {
+                statusIndicator.classList.remove('inactive');
+                statusText.innerHTML = '<span class="status-indicator"></span>Active Agent';
+            } else {
+                statusIndicator.classList.add('inactive');
+                statusText.innerHTML = '<span class="status-indicator inactive"></span>Inactive Agent';
+            }
+
+            // Update profile picture if available
+            if (data.profile_picture) {
+                const profileImg = document.querySelector('.profile-img');
+                profileImg.innerHTML = `<img src="${data.profile_picture}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            }
+        }
+
+        // Initialize the page with agent data
+        updateAgentProfile(agentData);
+
+        // Add hover effects and animations
+        document.querySelectorAll('.stat, .commission-card').forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+
+</html>
