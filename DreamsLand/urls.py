@@ -12,6 +12,9 @@ urlpatterns = [
     path("agent_update/<int:id>/",views.Agent_update,name="agent_update"),  # Include the app's URLs
     path("properties/", views.property_list, name="property_list"),
     path("login/", views.agent_login, name="agent_login"),
+    path("logout/", views.agent_logout, name="agent_logout"),
+    path("property/<str:id>/update/", views.property_update, name="property_update"),
+
     
 
 
